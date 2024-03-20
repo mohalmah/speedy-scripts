@@ -1,0 +1,46 @@
+let url = "WEBHOOK_URL";
+let table = base.getTable("TABLE");
+let view = table.getView("VIEW");
+
+let record = await input.recordAsync("Pick a record", view);
+
+if (record) {
+    // Prepare the data to send in the POST request
+    let postData = {
+        recordID: record.id,
+        field1: record.getCellValueAsString("Status") // Assuming you want to send Field1
+        //field2: record.getCellValueAsString("Field2")  // And Field2
+    };
+
+try {
+        let response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(postData),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Check the Content-Type of the response
+        const contentType = response.headers.get("Content-Type");
+        if (contentType && contentType.includes("application/json")) {
+            let data = await response.json();
+            console.log("Success:", data);
+            output.text(`Webhook call successful: ${JSON.stringify(data)}`);
+        } else {
+            // If not JSON, just read the text
+            let text = await response.text();
+            console.log("Response received:", text);
+            output.text(`Webhook call successful, but response was not JSON. Response: ${text}`);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        output.text(`Webhook call failed: ${error}`);
+    }
+} else {
+    output.text("No record was selected.");
+}
