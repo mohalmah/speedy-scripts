@@ -2,6 +2,7 @@ let url = "WEBHOOK_URL";
 let table = base.getTable("TABLE");
 let view = table.getView("VIEW");
 
+
 let record = await input.recordAsync("Pick a record", view);
 
 if (record) {
